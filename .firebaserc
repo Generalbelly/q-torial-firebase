@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "still-protocol-228301"
+    "dev": "still-protocol-228301",
+    "prod": "q-torial"
   }
 }

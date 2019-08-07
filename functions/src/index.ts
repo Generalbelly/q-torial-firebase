@@ -1,11 +1,12 @@
-import * as admin from 'firebase-admin';
-import * as functions from "firebase-functions";
+import admin from './admin';
+import functions from './functions';
+import { onTutorialDelete } from './tutorial';
+import { getGoogleAccessToken, addOauth, onOauthDelete } from './oauth';
 
 admin.initializeApp(functions.config().firebase);
 
-export const onTutorialDelete = functions.firestore
-    .document('/users/{userID}/tutorials/{tutorialID}')
-    .onDelete(async (snap, context) => {
-        const querySnapshot = await snap.ref.collection('steps').get()
-        await Promise.all(querySnapshot.docs.map(doc => doc.ref.delete()))
-    });
+exports.onTutorialDelete = onTutorialDelete;
+exports.getAccessToken = getGoogleAccessToken;
+
+exports.addOauth = addOauth;
+exports.onOauthDelete = onOauthDelete;
