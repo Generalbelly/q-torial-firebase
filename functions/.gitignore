@@ -6,4 +6,4 @@
 typings/
 
 node_modules/
-./client_secret_238199076534-2fsv4bautiodg6msm2i351re460jm30p.apps.googleusercontent.com.json
+./staging-secret.json

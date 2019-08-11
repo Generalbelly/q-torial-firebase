@@ -21,7 +21,7 @@ service cloud.firestore {
       allow update: if signedIn() &&
         incomingData().updatedAt is timestamp;
     }
-    match /users/{userID}/oauths/{oauthID}/{document=**} {
+    match /users/{userID}/gas/{oauthID}/{document=**} {
       allow list, get, delete: if signedIn();
       allow create: if signedIn() &&
         incomingData().createdAt is timestamp &&
