@@ -128,14 +128,21 @@ export const queryAccounts = functions.https.onCall((data: any, context: functio
 });
 
 export const onGaDelete = functions.firestore
-  .document('/users/{userID}/gas/{oauthID}')
+  .document('/users/{userID}/gas/{gaID}')
   .onDelete(async (snap, context) => {
-    const data = snap.data();
-    if (!data) {
-      throw new Error(`oauth not found: id is ${snap.id}`);
+    try {
+      const data = snap.data();
+      if (!data) {
+        throw new Error(`ga not found: id is ${snap.id}`);
+      }
+      if (!data.refreshToken) {
+        throw new Error(`ga does not have refreshToken: id is ${snap.id}`);
+      }
+      oauth2Client.setCredentials({ refresh_token: data.refreshToken });
+      await oauth2Client.revokeToken(data.accessToken);
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
     }
-    if (!data.accessToken) {
-      throw new Error(`oauth does not have accessToken: id is ${snap.id}`);
-    }
-    await oauth2Client.revokeToken(data.accessToken);
   });
