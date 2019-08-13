@@ -26,6 +26,8 @@ service cloud.firestore {
       allow create: if signedIn() &&
         incomingData().createdAt is timestamp &&
         incomingData().updatedAt is timestamp;
+      allow update: if signedIn() &&
+        incomingData().updatedAt is timestamp;
     }
   }
 }
