@@ -13,20 +13,23 @@ service cloud.firestore {
     function signedIn() {
     	return authData().uid != null;
     }
+    function isOwner(userID) {
+      return authData().uid == userID;
+    }
     match /users/{userID}/tutorials/{tutorialID}/{document=**} {
-      allow list, get, delete: if signedIn();
-      allow create: if signedIn() &&
+      allow list, get, delete: if signedIn() && isOwner(userID);
+      allow create: if signedIn() && isOwner(userID) &&
         incomingData().createdAt is timestamp &&
         incomingData().updatedAt is timestamp;
-      allow update: if signedIn() &&
+      allow update: if signedIn() && isOwner(userID) &&
         incomingData().updatedAt is timestamp;
     }
-    match /users/{userID}/gas/{oauthID}/{document=**} {
-      allow list, get, delete: if signedIn();
-      allow create: if signedIn() &&
+    match /users/{userID}/gas/{gaID}/{document=**} {
+      allow list, get, delete: if signedIn() && isOwner(userID);
+      allow create: if signedIn() && isOwner(userID) &&
         incomingData().createdAt is timestamp &&
         incomingData().updatedAt is timestamp;
-      allow update: if signedIn() &&
+      allow update: if signedIn() && isOwner(userID) &&
         incomingData().updatedAt is timestamp;
     }
   }

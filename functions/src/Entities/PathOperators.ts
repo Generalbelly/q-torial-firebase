@@ -48,5 +48,9 @@ export const validateUrlPath = (pathOperator: string, pathValue: string, urlPath
     [PATH_ALL]: (pv: string, up: string) => true,
   }
   const valid = evaluators[pathOperator](pathValue, urlPath)
+  console.log('pathOperator', pathOperator);
+  console.log('pathValue', pathValue);
+  console.log('urlPath', urlPath);
+  console.log('valid', valid);
   return valid
 }
