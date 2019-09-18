@@ -5,8 +5,6 @@ export default class GaEntity extends Entity {
 
   refreshToken:string|null = null;
 
-  accessToken:string|null = null;
-
   accountId:string|null = null;
 
   accountName:string|null = null;
@@ -14,6 +12,10 @@ export default class GaEntity extends Entity {
   propertyId:string|null = null;
 
   propertyName:string|null = null;
+
+  viewId:string|null = null;
+
+  viewName:string|null = null;
 
   constructor(init?: Partial<GaEntity>) {
     super()

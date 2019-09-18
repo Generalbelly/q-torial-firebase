@@ -61,14 +61,12 @@ export const addGa = functions.https.onCall((data: any, context: functions.https
     const { refresh_token } = await getToken(code);
     
     oauth2Client.setCredentials({ refresh_token: refresh_token });
-    const response = await oauth2Client.getAccessToken();
     
     try {
       const ref = admin.firestore().collection("users").doc(auth.uid).collection('gas').doc();
       const ga = {
         email: email,
         refreshToken: refresh_token,
-        accessToken: response.token,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
@@ -107,19 +105,26 @@ export const queryAccounts = functions.https.onCall((data: any, context: functio
         auth: oauth2Client,
         version: "v3",
       });
-      const response = await apiClient.management.accounts.list();
-      let accounts:any[] = [];
-      if (response.data.items) {
-        accounts = await Promise.all(response.data.items.filter(item => item.id).map(async (account) => {
-          const res = await apiClient.management.webproperties.list({
+      const accountsRes = await apiClient.management.accounts.list();
+      const accounts:any[] = await Promise.all(accountsRes.data.items!.map(async (account) => {
+        const webPropertiesRes = await apiClient.management.webproperties.list({
+          accountId: account.id,
+        });
+        const webProperties:any[] = await Promise.all(webPropertiesRes.data.items!.map(async (webProperty) => {
+          const profilesRes = await apiClient.management.profiles.list({
             accountId: account.id,
-          });
+            webPropertyId: webProperty.id,
+          })
           return {
-            ...account,
-            webProperties: res.data.items,
-          };
-        }));
-      }
+            ...webProperty,
+            profiles: profilesRes.data.items,
+          }
+        }))
+        return {
+          ...account,
+          webProperties,
+        };
+      }));
       resolve(accounts); 
     } catch (error) {
       reject(error);
@@ -139,7 +144,14 @@ export const onGaDelete = functions.firestore
         throw new Error(`ga does not have refreshToken: id is ${snap.id}`);
       }
       oauth2Client.setCredentials({ refresh_token: data.refreshToken });
-      await oauth2Client.revokeToken(data.accessToken);
+      const response = await oauth2Client.getAccessToken();
+      await oauth2Client.revokeToken(response.token!);
+
+      const userKey = context.params.userID
+      const tutorials = await admin.firestore().collection("users").doc(userKey).collection('tutorials').where("gaId", "==", context.params.gaID).get();
+      await Promise.all(tutorials.docs.map(doc => doc.ref.update({
+        gaId: null,
+      })));
       return true;
     } catch (error) {
       console.log(error);

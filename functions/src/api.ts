@@ -93,7 +93,7 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
         });
       })
       if (selectedTutorial.gaId) {
-        const gaRef = await selectedTutorialRef.collection('gas').doc(selectedTutorial.gaId).get();
+        const gaRef = await admin.firestore().collection("users").doc(userKey).collection('gas').doc(selectedTutorial.gaId).get();
         ga = new GaEntity({
           id: gaRef.id,
           ...gaRef.data(),
