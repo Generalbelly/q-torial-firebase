@@ -107,3 +107,30 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
   }
   return response.status(405).send('Method Not Allowed');
 });
+
+export const storePerformance = functions.https.onRequest(async (request, response) => {
+  response.set('Access-Control-Allow-Origin', '*');
+  if (request.method === 'OPTIONS') {
+    response.set('Access-Control-Allow-Methods', 'POST');
+    response.set('Access-Control-Allow-Headers', 'Content-Type');
+    response.set('Access-Control-Max-Age', '3600');
+    return response.status(204).send('');
+  } else if (request.method === 'POST') {
+    if (!request.body) {
+      return response.status(422).send('Unprocessable Entity');
+    }
+    const ref = admin.firestore().collection("performances").doc();
+    await ref.set({
+      completeSteps: request.body.completeSteps,
+      allSteps: request.body.allSteps,
+      complete: request.body.complete,
+      elapsedTime: request.body.elapsedTime,
+      euId: request.body.euId,
+      tutorialId: request.body.tutorialId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    return response.sendStatus(200);
+  }
+  return response.status(405).send('Method Not Allowed');
+});
