@@ -10,14 +10,17 @@ export default [
   {
     value: PATH_ALL,
     text: 'All the url path',
+    pathPriority: 0,
   },
   {
     value: PATH_EQUALS,
     text: 'url paths that equal to',
+    pathPriority: 1,
   },
   {
     value: PATH_STARTS_WITH,
     text: 'url paths that start with',
+    pathPriority: 3,
   },
   // {
   //   value: PATH_ENDS_WITH,
@@ -30,6 +33,7 @@ export default [
   {
     value: PATH_REGEX,
     text: 'url paths that match the following regular expression: ',
+    pathPriority: 2,
   },
   // {
   //   value: PATH_NOT_EQUALS,

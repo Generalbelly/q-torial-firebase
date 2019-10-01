@@ -1,7 +1,7 @@
 import { URL } from 'url';
 import TutorialEntity, { Parameter } from './Entities/TutorialEntity';
 import GaEntity from './Entities/GaEntity';
-import { validateUrlPath, PATH_ALL, PATH_REGEX, PATH_STARTS_WITH, PATH_EQUALS } from './Entities/PathOperators';
+import { validateUrlPath } from './Entities/PathOperators';
 import admin from './admin';
 import functions from './functions';
 import StepEntity from './Entities/StepEntity';
@@ -23,7 +23,7 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
     const url = new URL(request.query.url);
     console.log('url.hostname', url.hostname);
     const userKey = request.query.key;
-    const tutorialRefs = await admin.firestore().collection("users").doc(userKey).collection('tutorials').get();
+    const tutorialRefs = await admin.firestore().collection("users").doc(userKey).collection('tutorials').orderBy('pathPriority', 'asc').get();
     // tutorialsをループしてpathvalueをチェックする
     const matchedTutorials: TutorialEntity[] = [];
     tutorialRefs.forEach(ref => {
@@ -51,36 +51,6 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
     if (matchedTutorials.length === 1) {
       selectedTutorial = matchedTutorials[0];
     } else if (matchedTutorials.length > 0) {
-      matchedTutorials.sort((a, b) => {
-        if (a.pathOperator === b.pathOperator)  {
-          return 0;
-        }
-        if (a.pathOperator === PATH_ALL) {
-          return -1;
-        }
-        if (b.pathOperator === PATH_ALL) {
-          return 1;
-        }
-        if (a.pathOperator === PATH_EQUALS) {
-          return -1;
-        }
-        if (b.pathOperator === PATH_EQUALS) {
-          return 1;
-        }
-        if (a.pathOperator === PATH_REGEX) {
-          return -1;
-        }
-        if (b.pathOperator === PATH_REGEX) {
-          return 1;
-        }
-        if (a.pathOperator === PATH_STARTS_WITH) {
-          return -1;
-        }
-        if (b.pathOperator === PATH_STARTS_WITH) {
-          return 1;
-        }
-        return 0;
-      })
       selectedTutorial = matchedTutorials[0];
     }
     if (selectedTutorial) {
@@ -116,17 +86,18 @@ export const storePerformance = functions.https.onRequest(async (request, respon
     response.set('Access-Control-Max-Age', '3600');
     return response.status(204).send('');
   } else if (request.method === 'POST') {
-    if (!request.body) {
+    const tutorialId: string = request.body.tutorialId;
+    const userKey: string = request.body.key;
+    if (!request.body || !tutorialId) {
       return response.status(422).send('Unprocessable Entity');
     }
-    const ref = admin.firestore().collection("performances").doc();
+    const ref = admin.firestore().collection("users").doc(userKey).collection('tutorials').doc(tutorialId).collection("performances").doc();
     await ref.set({
       completeSteps: request.body.completeSteps,
       allSteps: request.body.allSteps,
       complete: request.body.complete,
       elapsedTime: request.body.elapsedTime,
       euId: request.body.euId,
-      tutorialId: request.body.tutorialId,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
