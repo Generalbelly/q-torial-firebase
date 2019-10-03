@@ -3,6 +3,7 @@ import functions from './functions';
 import { onTutorialDelete, onTutorialCreate, onTutorialUpdate } from './tutorial';
 import { addGa, queryAccounts, onGaDelete } from './ga';
 import { getTutorial, storePerformance } from './api';
+import { stripeWebhook } from './stripe';
 
 admin.initializeApp(functions.config().firebase);
 
@@ -16,3 +17,5 @@ exports.onGaDelete = onGaDelete;
 
 exports.getTutorial = getTutorial;
 exports.storePerformance = storePerformance;
+
+exports.stripeWebhook = stripeWebhook;
