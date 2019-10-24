@@ -2,7 +2,7 @@ version: 2
 jobs:
   deploy_job:
     docker:
-      - image: circleci/node:chakracore-8.11.1
+      - image: circleci/node:8.13.0
     steps:
       - checkout
 
