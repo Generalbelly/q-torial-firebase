@@ -2,14 +2,14 @@ version: 2
 jobs:
   deploy_job:
     docker:
-      - image: circleci/node:8.13.0
+      - image: circleci/node:8.16.0
     steps:
       - checkout
 
       - restore_cache:
           name: Restore cache
           keys:
-            - v1-dependencies-{{ checksum "yarn.lock" }}-{{ checksum "functions/yarn.lock" }
+            - v1-dependencies-{{ checksum "yarn.lock" }}-{{ checksum "functions/yarn.lock" }}
 
       - run:
           name: install dependency for the project
@@ -17,7 +17,7 @@ jobs:
 
       - save_cache:
           name: Save cache
-          key: v1-dependencies-{{ checksum "yarn.lock" }}-{{ checksum "functions/yarn.lock" }
+          key: v1-dependencies-{{ checksum "yarn.lock" }}-{{ checksum "functions/yarn.lock" }}
           paths:
             - node_modules
             - functions/node_modules
@@ -43,7 +43,7 @@ jobs:
 
       - run:
           name: deploy cloud functions
-          command: ../node_modules/.bin/firebase deploy --only functions --token ${FIREBASE_TOKEN}
+          command: ./node_modules/.bin/firebase deploy --only functions --token ${FIREBASE_TOKEN}
 
 workflows:
   version: 2
