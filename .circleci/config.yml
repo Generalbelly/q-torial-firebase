@@ -6,7 +6,6 @@ jobs:
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
         key: dependency-cache-{{ checksum "package-lock.json" }}
 
@@ -36,7 +35,7 @@ jobs:
       
       - run:
           name: deploy storage:rules
-       command: firebase deploy --only storage --token ${FIREBASE_TOKEN}
+          command: firebase deploy --only storage --token ${FIREBASE_TOKEN}
 
       - run:
           name: deploy cloud functions
