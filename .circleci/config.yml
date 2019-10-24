@@ -23,7 +23,7 @@ jobs:
 
       - run:
           name: set env for clound functions
-          command: . .env && eval "firebase functions:config:set $(cat config|tr "\n" " ")"
+          command: eval "firebase functions:config:set $(cat config|tr "\n" " ")"
 
       - run:
           name: set the project
