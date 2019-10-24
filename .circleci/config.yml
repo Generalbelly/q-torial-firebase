@@ -9,20 +9,20 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
-						
+
 			- run:
 					name: install dependency for cloud functions
-					command: cd functions && yarn install && cd ../
-					
+          command: cd functions && yarn install && cd ../
+          
 			- save_cache:
 					key: dependency-cache-{{ checksum "package-lock.json" }}
 					paths:
             - ./node_modules
-
+            
       - run:
          name: set env for clound functions
          command: . .env && eval "firebase functions:config:set $(cat config|tr "\n" " ")"
-            	
+         
       - run:
           name: set the project
           command: firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN}
