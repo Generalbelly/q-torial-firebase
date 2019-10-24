@@ -44,12 +44,12 @@ jobs:
           command: cd ../
 
       - run:
-          name: set env for clound functions
-          command: eval "./node_modules/.bin/firebase functions:config:set $(cat config|tr "\n" " ")"
-
-      - run:
           name: set the project
           command: ./node_modules/.bin/firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN}
+
+      - run:
+          name: set env for clound functions
+          command: eval "./node_modules/.bin/firebase functions:config:set $(cat config|tr "\n" " ")"
 
       # - run:
       #     name: deploy firebase hosting
