@@ -11,7 +11,13 @@ import functions from './functions';
 // oauth for google analytics
 let googleSecrets;
 if (process.env.GCLOUD_PROJECT === 'q-torial') {
-    googleSecrets = "";
+    // TODO ドメイン取得後置き換える
+    googleSecrets = {
+      web: {
+        client_id: "",
+        client_secret: "",
+      },
+    };
 } else {
     googleSecrets = stagingSecret;
 }
