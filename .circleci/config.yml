@@ -22,10 +22,6 @@ jobs:
             - ./node_modules
 
       - run:
-          name: move to cloud function root directory
-          command: cd functions
-
-      - run:
           name: set the project
           command: ./node_modules/.bin/firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN}
 
@@ -43,6 +39,10 @@ jobs:
       - run:
           name: deploy storage:rules
           command: ./node_modules/.bin/firebase deploy --only storage --token ${FIREBASE_TOKEN}
+
+      - run:
+          name: move to cloud function root directory
+          command: cd functions
 
       - restore_cache:
           name: Restore cache for cloud function
