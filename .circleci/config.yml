@@ -2,7 +2,7 @@ version: 2
 jobs:
   deploy_job:
     docker:
-      - image: circleci/node:10.7
+      - image: circleci/node:chakracore-8.11.1
     steps:
       - checkout
 
@@ -16,6 +16,7 @@ jobs:
           command: cd functions && yarn install && cd ../
 
       - save_cache:
+          name: Save cache
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
             - ./node_modules
