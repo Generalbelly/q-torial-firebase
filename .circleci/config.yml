@@ -7,8 +7,9 @@ jobs:
       - checkout
 
       - restore_cache:
-        keys:
-          - dependency-cache-{{ checksum "package-lock.json" }}
+          name: Restore cache
+          keys:
+            - dependency-cache-{{ checksum "package-lock.json" }}
 
       - run:
           name: install dependency for cloud functions
