@@ -1,0 +1,52 @@
+version: 2
+jobs:
+  deploy_job:
+    docker:
+      - image: circleci/node:10.7
+    steps:
+			- checkout
+			
+      # Download and cache dependencies
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package-lock.json" }}
+						
+			- run:
+					name: install dependency for cloud functions
+					command: cd functions && yarn install && cd ../
+					
+			- save_cache:
+					key: dependency-cache-{{ checksum "package-lock.json" }}
+					paths:
+            - ./node_modules
+
+      - run:
+         name: set env for clound functions
+         command: . .env && eval "firebase functions:config:set $(cat config|tr "\n" " ")"
+            	
+      - run:
+          name: set the project
+          command: firebase use ${FIREBASE_PROJECT} --token ${FIREBASE_TOKEN}
+             	
+      # - run:
+      #     name: deploy firebase hosting
+      #     command: firebase deploy --only hosting --token ${FIREBASE_TOKEN}
+      - run:
+          name: deploy firestore:rules
+          command: firebase deploy --only firestore:rules --token ${FIREBASE_TOKEN}
+      
+      - run:
+          name: deploy storage:rules
+       command: firebase deploy --only storage --token ${FIREBASE_TOKEN}
+
+      - run:
+          name: deploy cloud functions
+          command: firebase deploy --only functions --token ${FIREBASE_TOKEN}
+  
+workflows:
+  version: 2
+  deploy_dev:
+    jobs:
+      - deploy_job:
+				filters:
+					branches:
+						only: master

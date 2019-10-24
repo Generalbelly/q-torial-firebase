@@ -1,0 +1,2 @@
+stripe.ending_secret="${STRIPE_ENDING_SECRET}"
+stripe.token="${STRIPE_TOKEN}"

@@ -16,6 +16,14 @@ service cloud.firestore {
     function isOwner(userID) {
       return authData().uid == userID;
     }
+    match /users/{userID} {
+      allow get: if signedIn() && isOwner(userID);
+      allow create: if signedIn() && isOwner(userID) &&
+        incomingData().createdAt is timestamp &&
+        incomingData().updatedAt is timestamp;
+      allow update: if signedIn() && isOwner(userID) &&
+        incomingData().updatedAt is timestamp;
+    }
     match /users/{userID}/tutorials/{tutorialID}/{document=**} {
       allow list, get, delete: if signedIn() && isOwner(userID);
       allow create: if signedIn() && isOwner(userID) &&

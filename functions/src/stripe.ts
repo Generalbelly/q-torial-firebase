@@ -22,15 +22,43 @@ export const stripeWebhook = functions.https.onRequest(async (request, response)
 		} catch (e) {
 			return response.status(400).send(`Webhook Error: ${e.message}`);
 		}
-		console.log(event.type);
 		if (event.type === 'checkout.session.completed') {
-			const userKey = event.data.client_reference_id;
-			const customer = event.data.customer;
-			await admin.firestore().collection("users").doc(userKey).set({
-				customer,
+			const userKey = event.data.object.client_reference_id;
+			const customerId = event.data.object.customer;
+			console.log(event.data)
+			const subscriptionId = event.data.subscription.id;
+			await admin.firestore().collection("stripe_customers").doc(userKey).set({
+				stripeCustomerId: customerId,
+				stripeSubscriptionId: subscriptionId,
 			}, { merge: true });
+			return response.status(200).json({received: true});
 		}
-		return response.status(200).json({received: true});
+		return response.status(200).json({received: false});
   }
   return response.status(405).send('Method Not Allowed');
+});
+
+export const cancelSubscription = functions.https.onCall((data: any, context: functions.https.CallableContext) => {
+	return new Promise(async (resolve, reject) => {
+		const { auth } = context;
+		if (!auth) {
+			throw new functions.https.HttpsError('failed-precondition', 'The function must be called while authenticated.');
+		}
+		try {
+			const snapshot = await admin.firestore().collection("users").doc(auth.uid).get();
+			const user: any = snapshot.data()
+			if (!user.stripeSubscriptionId || !user.stripeCustomerId) {
+				throw new functions.https.HttpsError('failed-precondition', 'The function must be called when user has a paid plan.');
+			}
+			stripe.subscriptions.del(user.stripeSubscriptionId);
+			await snapshot.ref.update({
+				stripeCustomerId: null,
+				stripeSubscriptionId: null,
+			})
+			resolve(true); 
+		} catch (error) {
+			console.error(error);
+			reject(false);
+		}
+	});
 });
