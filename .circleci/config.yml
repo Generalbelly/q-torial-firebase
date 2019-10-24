@@ -9,17 +9,18 @@ jobs:
       - restore_cache:
           name: Restore cache
           keys:
-            - dependency-cache-{{ checksum "yarn.lock" }}
+            - v1-dependencies-{{ checksum "yarn.lock" }}-{{ checksum "functions/yarn.lock" }
 
       - run:
           name: install dependency for the project
-          command: yarn install
+          command: yarn install && cd functions && yarn install && cd ../
 
       - save_cache:
           name: Save cache
-          key: dependency-cache-{{ checksum "yarn.lock" }}
+          key: v1-dependencies-{{ checksum "yarn.lock" }}-{{ checksum "functions/yarn.lock" }
           paths:
-            - ./node_modules
+            - node_modules
+            - functions/node_modules
 
       - run:
           name: set the project
@@ -41,31 +42,8 @@ jobs:
           command: ./node_modules/.bin/firebase deploy --only storage --token ${FIREBASE_TOKEN}
 
       - run:
-          name: move to cloud function root directory
-          command: cd functions
-
-      - restore_cache:
-          name: Restore cache for cloud function
-          keys:
-            - dependency-cache-{{ checksum "yarn.lock" }}
-
-      - run:
-          name: install dependency for cloud functions
-          command: yarn install
-
-      - save_cache:
-          name: Save cache for cloud function
-          key: dependency-cache-{{ checksum "yarn.lock" }}
-          paths:
-            - ./node_modules
-
-      - run:
           name: deploy cloud functions
           command: ../node_modules/.bin/firebase deploy --only functions --token ${FIREBASE_TOKEN}
-  
-      - run:
-          name: move back to the project root
-          command: cd ../
 
 workflows:
   version: 2
