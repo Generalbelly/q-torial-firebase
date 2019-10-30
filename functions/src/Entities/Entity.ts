@@ -1,8 +1,9 @@
+import admin from '../admin'
 export default class Entity {
   id:string|null = null
 
-  createdAt = null
+  createdAt: admin.firestore.FieldValue|null = null
 
-  updatedAt = null
+  updatedAt: admin.firestore.FieldValue|null = null
 
 }

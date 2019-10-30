@@ -63,8 +63,6 @@ node_modules/
 
 # dotenv environment variables file
 .env
-
+staging-secret.json
 /.idea
 /.vscode
-
-functions/src/*secret.json

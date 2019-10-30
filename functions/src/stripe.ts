@@ -1,8 +1,7 @@
 import admin from './admin';
 import functions from './functions';
+import StripeCustomerEntity from './Entities/StripeCustomerEntity';
 
-// TODO: firebase functions:config:set stripe.token="SECRET_STRIPE_TOKEN_HERE"
-// TODO: firebase functions:config:set stripe.endingSecret="ENDING_SECRET"
 const stripe = require('stripe')(functions.config().stripe.token);
 const endpointSecret = functions.config().stripe.ending_secret
 
@@ -25,12 +24,13 @@ export const stripeWebhook = functions.https.onRequest(async (request, response)
 		if (event.type === 'checkout.session.completed') {
 			const userKey = event.data.object.client_reference_id;
 			const customerId = event.data.object.customer;
-			console.log(event.data)
-			const subscriptionId = event.data.subscription.id;
-			await admin.firestore().collection("stripe_customers").doc(userKey).set({
-				stripeCustomerId: customerId,
-				stripeSubscriptionId: subscriptionId,
-			}, { merge: true });
+			const subscriptionId = event.data.object.subscription;
+			await admin.firestore().doc(userKey).collection("stripe_customers").add(new StripeCustomerEntity({
+				customerId: customerId,
+				subscriptionId: subscriptionId,
+				createdAt: admin.firestore.FieldValue.serverTimestamp(),
+				deletedAt: null,
+			}));
 			return response.status(200).json({received: true});
 		}
 		return response.status(200).json({received: false});
@@ -44,17 +44,20 @@ export const cancelSubscription = functions.https.onCall((data: any, context: fu
 		if (!auth) {
 			throw new functions.https.HttpsError('failed-precondition', 'The function must be called while authenticated.');
 		}
+		const { id } = data;
 		try {
-			const snapshot = await admin.firestore().collection("users").doc(auth.uid).get();
-			const user: any = snapshot.data()
-			if (!user.stripeSubscriptionId || !user.stripeCustomerId) {
-				throw new functions.https.HttpsError('failed-precondition', 'The function must be called when user has a paid plan.');
+			const snapshot = await admin.firestore().doc(auth.uid).collection("stripe_customers").doc(id).get();
+			const d = snapshot.data()
+			if (d) {
+				const stripeCustomer: StripeCustomerEntity = new StripeCustomerEntity(d)
+				if (!stripeCustomer.subscriptionId || !stripeCustomer.customerId) {
+					throw new functions.https.HttpsError('failed-precondition', 'The function must be called when subscriptionId and customerId are fullfilled.');
+				}
+				stripe.subscriptions.del(stripeCustomer.subscriptionId);
+				await snapshot.ref.update({
+					deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+				})
 			}
-			stripe.subscriptions.del(user.stripeSubscriptionId);
-			await snapshot.ref.update({
-				stripeCustomerId: null,
-				stripeSubscriptionId: null,
-			})
 			resolve(true); 
 		} catch (error) {
 			console.error(error);

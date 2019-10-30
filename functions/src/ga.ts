@@ -4,26 +4,13 @@ import { GaxiosError } from 'gaxios';
 import { Credentials } from 'google-auth-library';
 import { google } from "googleapis";
 
-import stagingSecret from "./stagingSecret";
 import admin from './admin';
 import functions from './functions';
 
 // oauth for google analytics
-let googleSecrets;
-if (process.env.GCLOUD_PROJECT === 'q-torial') {
-    // TODO ドメイン取得後置き換える
-    googleSecrets = {
-      web: {
-        client_id: "",
-        client_secret: "",
-      },
-    };
-} else {
-    googleSecrets = stagingSecret;
-}
-
-const clientId = googleSecrets.web.client_id;
-const clientSecret = googleSecrets.web.client_secret;
+const credentials: any = functions.config().ga.credentials;
+const clientId = credentials.client_id;
+const clientSecret = credentials.client_secret;
 // Don't use an actual redirect uri from our list of valid uri's. Instead, it needs to be postmessage.
 // https://stackoverflow.com/a/48121098/7621726
 const redirectUri = 'postmessage';
