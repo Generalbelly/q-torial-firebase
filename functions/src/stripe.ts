@@ -25,12 +25,13 @@ export const stripeWebhook = functions.https.onRequest(async (request, response)
 			const userKey = event.data.object.client_reference_id;
 			const customerId = event.data.object.customer;
 			const subscriptionId = event.data.object.subscription;
-			await admin.firestore().doc(userKey).collection("stripe_customers").add(new StripeCustomerEntity({
+			const stripeCustomerEntity = new StripeCustomerEntity({
 				customerId: customerId,
 				subscriptionId: subscriptionId,
 				createdAt: admin.firestore.FieldValue.serverTimestamp(),
 				deletedAt: null,
-			}));
+			});
+			await admin.firestore().collection("users").doc(userKey).collection("stripe_customers").add(stripeCustomerEntity.toPlainObject());
 			return response.status(200).json({received: true});
 		}
 		return response.status(200).json({received: false});
@@ -46,14 +47,15 @@ export const cancelSubscription = functions.https.onCall((data: any, context: fu
 		}
 		const { id } = data;
 		try {
-			const snapshot = await admin.firestore().doc(auth.uid).collection("stripe_customers").doc(id).get();
+			const snapshot = await admin.firestore().collection("users").doc(auth.uid).collection("stripe_customers").doc(id).get();
 			const d = snapshot.data()
 			if (d) {
 				const stripeCustomer: StripeCustomerEntity = new StripeCustomerEntity(d)
 				if (!stripeCustomer.subscriptionId || !stripeCustomer.customerId) {
 					throw new functions.https.HttpsError('failed-precondition', 'The function must be called when subscriptionId and customerId are fullfilled.');
 				}
-				stripe.subscriptions.del(stripeCustomer.subscriptionId);
+				stripe.subscriptions.update(stripeCustomer.subscriptionId, {cancel_at_period_end: true});
+//				stripe.subscriptions.del(stripeCustomer.subscriptionId);
 				await snapshot.ref.update({
 					deletedAt: admin.firestore.FieldValue.serverTimestamp(),
 				})
