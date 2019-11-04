@@ -29,6 +29,7 @@ export const stripeWebhook = functions.https.onRequest(async (request, response)
 				customerId: customerId,
 				subscriptionId: subscriptionId,
 				createdAt: admin.firestore.FieldValue.serverTimestamp(),
+				updatedAt: admin.firestore.FieldValue.serverTimestamp(),
 				deletedAt: null,
 			});
 			await admin.firestore().collection("users").doc(userKey).collection("stripe_customers").add(stripeCustomerEntity.toPlainObject());
@@ -58,6 +59,7 @@ export const cancelSubscription = functions.https.onCall((data: any, context: fu
 //				stripe.subscriptions.del(stripeCustomer.subscriptionId);
 				await snapshot.ref.update({
 					deletedAt: admin.firestore.FieldValue.serverTimestamp(),
+					updatedAt: admin.firestore.FieldValue.serverTimestamp(),
 				})
 			}
 			resolve(true); 
