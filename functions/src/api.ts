@@ -23,12 +23,12 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
     const url = new URL(request.query.url);
     console.log('url.hostname', url.hostname);
     const userKey = request.query.key;
-    const tutorialRefs = await admin.firestore().collection("users").doc(userKey).collection('tutorials').orderBy('pathPriority', 'asc').get();
+    const tutorialRefs = await admin.firestore().collection("users").doc(userKey).collection('tutorials').where('isActive', '==', true).orderBy('pathPriority', 'asc').get();
     // tutorialsをループしてpathvalueをチェックする
     const matchedTutorials: TutorialEntity[] = [];
     tutorialRefs.forEach(ref => {
       const tutorial = ref.data();
-      if (tutorial.isActive && validateUrlPath(tutorial.pathOperator, tutorial.pathValue, url.pathname)) {
+      if (validateUrlPath(tutorial.pathOperator, tutorial.pathValue, url.pathname)) {
 
         let hasSameParameters = true;
         tutorial.parameters.forEach((parameter: Parameter) => {
