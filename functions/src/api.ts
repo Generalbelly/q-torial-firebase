@@ -9,27 +9,27 @@ import StepEntity from './Entities/StepEntity';
 export const getTutorial = functions.https.onRequest(async (request, response) => {
   response.set('Access-Control-Allow-Origin', '*');
   if (request.method === 'OPTIONS') {
-    response.set('Access-Control-Allow-Methods', 'GET');
+    response.set('Access-Control-Allow-Methods', 'POST');
     response.set('Access-Control-Allow-Headers', 'Content-Type');
     response.set('Access-Control-Max-Age', '3600');
     return response.status(204).send('');
-  } else if (request.method === 'GET') {
+  } else if (request.method === 'POST') {
     response.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-    if (!request.query.url || !request.query.key) {
+    if (!request.body || !request.body.url || request.body.key || !request.body.once) {
       return response.status(422).send('Unprocessable Entity');
     }
     let selectedTutorial: TutorialEntity|null = null;
     let ga: object|null = null;
-    const url = new URL(request.query.url);
-    console.log('url.hostname', url.hostname);
-    const userKey = request.query.key;
-    const tutorialRefs = await admin.firestore().collection("users").doc(userKey).collection('tutorials').where('isActive', '==', true).orderBy('pathPriority', 'asc').get();
+    const url = new URL(request.body.url);
+    const userKey = request.body.key;
+    const once: string[] = request.body.once;
+
+    const tutorialRefs: FirebaseFirestore.QuerySnapshot = await admin.firestore().collection("users").doc(userKey).collection('tutorials').where('isActive', '==', true).orderBy('pathPriority', 'asc').get();
     // tutorialsをループしてpathvalueをチェックする
     const matchedTutorials: TutorialEntity[] = [];
     tutorialRefs.forEach(ref => {
       const tutorial = ref.data();
-      if (validateUrlPath(tutorial.pathOperator, tutorial.pathValue, url.pathname)) {
-
+      if (!once.includes(ref.id) && validateUrlPath(tutorial.pathOperator, tutorial.pathValue, url.pathname)) {
         let hasSameParameters = true;
         tutorial.parameters.forEach((parameter: Parameter) => {
           if (url.searchParams.get(parameter.key) !== parameter.value) {
