@@ -15,7 +15,8 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
     return response.status(204).send('');
   } else if (request.method === 'POST') {
     response.set('Cache-Control', 'public, max-age=300, s-maxage=600');
-    if (!request.body || !request.body.url || request.body.key || !request.body.once) {
+    // TODO 外部に公開することはないと思うが、そうなったらしっかりバリデーションをかける
+    if (request.body === undefined || request.body.url === undefined || request.body.key === undefined || request.body.once === undefined) {
       return response.status(422).send('Unprocessable Entity');
     }
     let selectedTutorial: TutorialEntity|null = null;
