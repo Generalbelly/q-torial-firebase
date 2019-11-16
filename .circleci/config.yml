@@ -38,6 +38,10 @@ jobs:
           command: ./node_modules/.bin/firebase deploy --only firestore:rules --token ${FIREBASE_TOKEN}
       
       - run:
+          name: deploy firestore:indexes
+          command: ./node_modules/.bin/firebase deploy --only firestore:indexes --token ${FIREBASE_TOKEN}
+      
+      - run:
           name: deploy storage:rules
           command: ./node_modules/.bin/firebase deploy --only storage --token ${FIREBASE_TOKEN}
 
