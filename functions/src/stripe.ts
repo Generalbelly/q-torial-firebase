@@ -89,7 +89,7 @@ export const stripeWebhook = functions.https.onRequest(async (request, response)
 				await admin.firestore().collection("users").doc(userKey).collection("stripe_customers").add(stripeCustomerEntity.toPlainObject());
 			} else if (event.type === 'customer.subscription.deleted' && !event.request) {
 				const customerId = event.data.object.customer;
-				const subscriptionId = event.data.object.subscription;
+				const subscriptionId = event.data.object.id;
 				await cancel(null, null, customerId, subscriptionId);
 			}
 		} catch (e) {
