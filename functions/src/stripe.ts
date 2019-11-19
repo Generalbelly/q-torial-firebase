@@ -34,7 +34,7 @@ const cancel = async (stripeCustomerId: string|null, userKey: string|null, custo
 			}
 
 			if (!snapshot) {
-				console.error(`ref not found(stripeCustomerId: ${stripeCustomerId}, customerId:${customerId}, subscriptionId:${subscriptionId}, userKey:${userKey}`);
+				console.error(`stripeCustomer not found(stripeCustomerId: ${stripeCustomerId}, customerId:${customerId}, subscriptionId:${subscriptionId}, userKey:${userKey}`);
 				resolve(false);
 				return
 			}
