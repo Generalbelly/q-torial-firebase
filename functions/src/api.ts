@@ -49,9 +49,7 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
       }
     });
     console.log('matchedTutorials', matchedTutorials);
-    if (matchedTutorials.length === 1) {
-      selectedTutorial = matchedTutorials[0];
-    } else if (matchedTutorials.length > 0) {
+    if (matchedTutorials.length > 0) {
       selectedTutorial = matchedTutorials[0];
     }
     if (selectedTutorial) {
