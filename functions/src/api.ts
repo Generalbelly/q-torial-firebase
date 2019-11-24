@@ -48,7 +48,6 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
         }
       }
     });
-    console.log('matchedTutorials', matchedTutorials);
     if (matchedTutorials.length > 0) {
       selectedTutorial = matchedTutorials[0];
     }
@@ -63,10 +62,12 @@ export const getTutorial = functions.https.onRequest(async (request, response) =
       })
       if (selectedTutorial.gaId) {
         const gaRef = await admin.firestore().collection("users").doc(userKey).collection('gas').doc(selectedTutorial.gaId).get();
-        ga = new GaEntity({
-          id: gaRef.id,
-          ...gaRef.data(),
-        });
+        if (gaRef.exists) {
+          ga = new GaEntity({
+            id: gaRef.id,
+            ...gaRef.data(),
+          });
+        }
       }
     }
     return response.status(200).send({
